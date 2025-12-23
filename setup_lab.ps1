@@ -47,16 +47,16 @@ $tools = @(
 
     # --- Static Analysis ---
     "pestudio",           # Initial Triage
-    "detectiteasy",       # Packer Detector
+    "die",       # Packer Detector
     "capa",               # Capability detection (Mandiant)
     "floss",              # Obfuscated String Solver (Mandiant)
     "yara",               # Pattern Matching
     "hxd",                # Hex Editor
-    "pe-bear",            # PE Viewer/Editor
-    "resourcehacker",     # Resource Editor
+    "pebear",            # PE Viewer/Editor
+    "reshack",     # Resource Editor
 
     # --- Debugging & Decompiling ---
-    "x64dbg",             # Main Debugger
+    "x64dbg.portable",             # Main Debugger
     "ghidra",             # Decompiler (Java dependency handled by choco)
     "dnspy",              # .NET Decompiler/Debugger
 
@@ -75,7 +75,7 @@ foreach ($tool in $tools) {
     choco install $tool -y --no-progress --ignore-checksums
 }
 
-# 4. Create "Tools" Folder
+# 4. Create "Malware_Tools" Folder on Desktop
 $desktop = [Environment]::GetFolderPath("Desktop")
 $toolsDir = Join-Path $desktop "Malware_Tools"
 if (-not (Test-Path $toolsDir)) {
@@ -83,7 +83,58 @@ if (-not (Test-Path $toolsDir)) {
     Write-Host "[*] Created 'Malware_Tools' folder on Desktop." -ForegroundColor Green
 }
 
-# 5. Set Wallpaper to Solid RED (Safety Warning)
+# 5. Create Shortcuts Logic
+Write-Host "[*] Creating Shortcuts for Tools..." -ForegroundColor Cyan
+
+function Create-Shortcut {
+    param ($TargetFile, $ShortcutName)
+    $WshShell = New-Object -ComObject WScript.Shell
+    $ShortcutPath = Join-Path $toolsDir "$ShortcutName.lnk"
+    $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
+    $Shortcut.TargetPath = $TargetFile
+    $Shortcut.Save()
+}
+
+$chocoLib = "$env:ChocolateyInstall\lib"
+# Mapping Tool Name -> Probable Path
+$toolPaths = @{
+    "x64dbg"         = "$chocoLib\x64dbg.portable\tools\release\x64\x64dbg.exe"
+    "x32dbg"         = "$chocoLib\x64dbg.portable\tools\release\x32\x32dbg.exe"
+    "PEStudio"       = "$chocoLib\PeStudio\tools\pestudio.exe"
+    "DetectItEasy"   = "$chocoLib\die\tools\die.exe"
+    "PE-bear"        = "$chocoLib\pebear\tools\PE-bear.exe"
+    "ResourceHacker" = "$chocoLib\reshack\tools\ResourceHacker.exe"
+    "ProcMon"        = "$chocoLib\sysinternals\tools\Procmon.exe"
+    "ProcExp"        = "$chocoLib\sysinternals\tools\procexp.exe"
+    "Autoruns"       = "$chocoLib\sysinternals\tools\Autoruns.exe"
+    "TCPView"        = "$chocoLib\sysinternals\tools\Tcpview.exe"
+    "Wireshark"      = "$env:ProgramFiles\Wireshark\Wireshark.exe"
+    "Ghidra"         = "$chocoLib\ghidra\tools\ghidraRun.bat"
+    "dnSpy"          = "$chocoLib\dnspy\tools\dnSpy.exe"
+    "HxD"            = "$env:ProgramFiles\HxD\HxD.exe"
+    "RegShot"        = "$chocoLib\regshot\tools\Regshot-x64-ANSI.exe"
+    "Cmder"          = "$chocoLib\cmder\tools\cmder.exe"
+    "ProcessHacker"  = "$env:ProgramFiles\Process Hacker 2\ProcessHacker.exe"
+}
+
+foreach ($name in $toolPaths.Keys) {
+    $path = $toolPaths[$name]
+    if (Test-Path $path) {
+        Create-Shortcut -TargetFile $path -ShortcutName $name
+        Write-Host " -> Linked $name" -ForegroundColor Green
+    } else {
+        # Check x86 fallback
+        $pathX86 = $path.Replace("ProgramFiles", "ProgramFiles (x86)")
+        if (Test-Path $pathX86) {
+             Create-Shortcut -TargetFile $pathX86 -ShortcutName $name
+             Write-Host " -> Linked $name (x86)" -ForegroundColor Green
+        } else {
+             Write-Host " -> Binary not found for $name (Path: $path)" -ForegroundColor DarkGray
+        }
+    }
+}
+
+# 6. Set Wallpaper to RED
 Write-Host "[*] Setting Warning Wallpaper..." -ForegroundColor Yellow
 try {
     $code = @'
