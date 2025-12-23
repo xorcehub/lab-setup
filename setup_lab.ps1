@@ -34,6 +34,35 @@ if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+Write-Host "--- INSTALLING JAVA (MICROSOFT OPENJDK 21) ---" -ForegroundColor Cyan
+
+# 1. Install Microsoft OpenJDK 21
+# This is robust and officially supported on Windows 11.
+choco install microsoft-openjdk-21 -y --no-progress --ignore-checksums
+
+# 2. Refresh Environment Variables (CRITICAL for Ghidra to find 'java')
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+# 3. Verify
+if (Get-Command java -ErrorAction SilentlyContinue) {
+    $v = java -version 2>&1 | Select-Object -First 1
+    Write-Host "[*] Java installed: $v" -ForegroundColor Green
+} else {
+    Write-Host "[!] Java installed, but not in PATH yet. RESTART SHELL." -ForegroundColor Yellow
+}
+
+# 4. Set JAVA_HOME explicitly (Ghidra helper)
+$jdkPath = "C:\Program Files\Microsoft\jdk-21.0.*"
+$found = Get-ChildItem $jdkPath | Select-Object -First 1
+if ($found) {
+    [System.Environment]::SetEnvironmentVariable("JAVA_HOME", $found.FullName, [System.EnvironmentVariableTarget]::Machine)
+    Write-Host "[*] JAVA_HOME set to: $($found.FullName)" -ForegroundColor Green
+}
+
+Write-Host "--- JAVA SETUP COMPLETE ---" -ForegroundColor Cyan
+
+
+
 # 2. Define Tool List
 $tools = @(
     # --- System Monitoring ---
