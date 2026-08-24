@@ -4,6 +4,13 @@
     Disables bloatware, telemetry, and security features that interfere with malware analysis.
 #>
 
+# Require admin (HKLM writes + service changes need it)
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "[!] This script requires administrator privileges. Relaunching elevated..." -ForegroundColor Red
+    Start-Process PowerShell.exe -Verb RunAs -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath
+    exit 1
+}
+
 Write-Host "--- OPTIMIZING WINDOWS 11 FOR MALWARE ANALYSIS ---" -ForegroundColor Cyan
 
 # 1. Start Menu Alignment (Left is best)
