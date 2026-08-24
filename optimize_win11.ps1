@@ -26,12 +26,23 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\P
 # Disable Animations via UserPreferencesMask
 Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "UserPreferencesMask" -Value ([byte[]](0x90,0x12,0x03,0x80,0x10,0x00,0x00,0x00))
 
-# 3. Disable Windows Defender (Soft-Disable)
-# NOTE: For a permanent hard-disable, use 'Defender Control' (dControl) tool manually.
+# 3. Disable Windows Defender (Real-Time Protection)
+# NOTE: The DisableAntiSpyware policy is IGNORED on Win10 1903+/Win11, so we use
+# Set-MpPreference instead. If Tamper Protection is ON it will silently revert
+# these settings - turn Tamper Protection off in Windows Security first.
 Write-Host "[*] Disabling Windows Defender Real-Time Protection..."
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value 1
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Force | Out-Null
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableRealtimeMonitoring" -Value 1
+try {
+    Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction Stop
+    $mp = Get-MpPreference
+    if ($mp.DisableRealtimeMonitoring) {
+        Write-Host "[*] Real-time protection disabled." -ForegroundColor Green
+    } else {
+        Write-Host "[!] Setting was reverted - Tamper Protection is likely ON." -ForegroundColor Red
+        Write-Host "    Turn it off in Windows Security > Virus & threat protection settings."
+    }
+} catch {
+    Write-Host "[!] Could not configure Defender: $_" -ForegroundColor Red
+}#
 
 # 4. Disable Updates & Annoyances
 Write-Host "[*] Disabling Windows Updates & Tips..."
