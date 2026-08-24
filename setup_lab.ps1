@@ -11,6 +11,13 @@
     - Utils: Cmder, Notepad++, 7-Zip, Python3
 #>
 
+# Require admin (choco install + machine-level env vars need it)
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "[!] This script requires administrator privileges. Relaunching elevated..." -ForegroundColor Red
+    Start-Process PowerShell.exe -Verb RunAs -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath
+    exit 1
+}
+
 Write-Host "--- STARTING MALWARE LAB SETUP ---" -ForegroundColor Cyan
 
 # 1. Install Chocolatey if not present
