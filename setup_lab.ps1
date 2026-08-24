@@ -146,7 +146,7 @@ $toolPaths = @{
     "Autoruns"       = "$chocoLib\sysinternals\tools\Autoruns.exe"
     "TCPView"        = "$chocoLib\sysinternals\tools\Tcpview.exe"
     "Wireshark"      = "$env:ProgramFiles\Wireshark\Wireshark.exe"
-    "Ghidra"         = "$chocoLib\ghidra\tools\ghidra_12.0_PUBLIC\ghidraRun.bat"
+    "Ghidra"         = (Get-ChildItem "$chocoLib\ghidra\tools\ghidra_*\ghidraRun.bat" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
     "dnSpy"          = "$chocoLib\dnspy\tools\dnSpy.exe"
     "HxD"            = "$env:ProgramFiles\HxD\HxD.exe"
     "RegShot"        = "$chocoLib\regshot\bin\Regshot-x64-ANSI.exe"
@@ -156,7 +156,7 @@ $toolPaths = @{
 
 foreach ($name in $toolPaths.Keys) {
     $path = $toolPaths[$name]
-    if (Test-Path $path) {
+    if ($path -and (Test-Path $path)) {
         Create-Shortcut -TargetFile $path -ShortcutName $name
         Write-Host " -> Linked $name" -ForegroundColor Green
     } else {
