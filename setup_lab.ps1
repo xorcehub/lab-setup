@@ -159,14 +159,7 @@ foreach ($name in $toolPaths.Keys) {
         Create-Shortcut -TargetFile $path -ShortcutName $name
         Write-Host " -> Linked $name" -ForegroundColor Green
     } else {
-        # Check x86 fallback
-        $pathX86 = $path.Replace("ProgramFiles", "ProgramFiles (x86)")
-        if (Test-Path $pathX86) {
-             Create-Shortcut -TargetFile $pathX86 -ShortcutName $name
-             Write-Host " -> Linked $name (x86)" -ForegroundColor Green
-        } else {
-             Write-Host " -> Binary not found for $name (Path: $path)" -ForegroundColor DarkGray
-        }
+         Write-Host " -> Binary not found for $name (Path: $path)" -ForegroundColor DarkGray
     }
 }
 
