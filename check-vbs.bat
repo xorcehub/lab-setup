@@ -106,7 +106,6 @@ if /i "!hvci!"=="DISABLED" set /a disabled+=1
 if /i "!cg!"=="DISABLED" set /a disabled+=1
 if /i "!wh!"=="DISABLED" set /a disabled+=1
 if /i "!hyp!"=="DISABLED" set /a disabled+=1
-if /i "!hyp!"=="NOT CONFIGURED" set /a disabled+=1
 
 :: --- Check tracking key ---
 set "tracked=NO"
@@ -132,6 +131,7 @@ if !disabled! equ 0 (
 ) else (
     echo   MODE: MIXED - !disabled!/6 features disabled
 )
+echo   Hypervisor is !hyp! ^(default when no feature requires it^)
 echo  ============================================================
 echo.
 pause
