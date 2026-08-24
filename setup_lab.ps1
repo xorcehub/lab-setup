@@ -45,7 +45,7 @@ Write-Host "--- INSTALLING JAVA (MICROSOFT OPENJDK 21) ---" -ForegroundColor Cya
 
 # 1. Install Microsoft OpenJDK 21
 # This is robust and officially supported on Windows 11.
-choco install microsoft-openjdk-21 -y --no-progress --ignore-checksums
+choco install microsoft-openjdk-21 -y --no-progress
 
 # 2. Refresh Environment Variables (CRITICAL for Ghidra to find 'java')
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
@@ -107,8 +107,9 @@ $tools = @(
 Write-Host "[*] Starting installation of tools..." -ForegroundColor Cyan
 foreach ($tool in $tools) {
     Write-Host " -> Installing $tool..." -ForegroundColor Yellow
-    # Added --ignore-checksums because sometimes older packages break on hash check
-    choco install $tool -y --no-progress --ignore-checksums
+    # No --ignore-checksums: a failed hash means a corrupted/mismatched package.
+    # Retry manually or update the package rather than skipping verification.
+    choco install $tool -y --no-progress
 }
 
 # 4. Create "Malware_Tools" Folder on Desktop
