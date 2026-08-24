@@ -125,7 +125,11 @@ reg query "HKLM\SOFTWARE\VBSToggle" /v CredentialGuard >nul 2>&1
 if errorlevel 1 goto :skip_cg
 :do_cg
 echo [4/6] Enabling Credential Guard...
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LsaCfgFlags /t REG_DWORD /d 2 /f >nul 2>&1
+:: Restore the ORIGINAL LsaCfgFlags value recorded by disable-vbs.bat (default 1)
+echo [4/6] Enabling Credential Guard...
+set "_cgval=1"
+for /f "tokens=3" %%a in ('reg query "HKLM\SOFTWARE\VBSToggle" /v CredentialGuard 2^>nul ^| find "CredentialGuard"') do set "_cgval=%%a"
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LsaCfgFlags /t REG_DWORD /d !_cgval! /f >nul 2>&1
 if errorlevel 1 (
     echo       Failed!
 ) else (

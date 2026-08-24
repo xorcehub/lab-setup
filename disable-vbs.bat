@@ -78,11 +78,18 @@ if errorlevel 1 (
 )
 
 :: Disable Credential Guard
+:: Record the ORIGINAL LsaCfgFlags value so enable-vbs.bat can restore it exactly
 echo [4/6] Disabling Credential Guard...
+set "cgOrig=0"
+for /f "tokens=3" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LsaCfgFlags 2^>nul ^| find "LsaCfgFlags"') do set "cgOrig=%%a"
+reg add "HKLM\SOFTWARE\VBSToggle" /v CredentialGuard /t REG_DWORD /d !cgOrig! /f >nul 2>&1
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LsaCfgFlags /t REG_DWORD /d 0 /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" /v LsaCfgFlags /f >nul 2>&1
-reg add "HKLM\SOFTWARE\VBSToggle" /v CredentialGuard /t REG_DWORD /d 1 /f >nul 2>&1
-echo       Done.
+if errorlevel 1 (
+    echo       Failed!
+    reg delete "HKLM\SOFTWARE\VBSToggle" /v CredentialGuard /f >nul 2>&1
+) else (
+    echo       Done.
+)
 
 :: Disable Windows Hello protection
 echo [5/6] Disabling Windows Hello Protection...
