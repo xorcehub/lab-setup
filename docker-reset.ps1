@@ -41,4 +41,4 @@ Remove-Item "$env:LOCALAPPDATA\Docker\data" -Recurse -Force -ErrorAction Silentl
 
 Write-Host ""
 Write-Host "--- RESET COMPLETE ---" -ForegroundColor Green
-Write-Host "Launch Docker Desktop now — it will rebuild its VM from scratch."
+Write-Host "Launch Docker Desktop now - it will rebuild its VM from scratch."
