@@ -23,17 +23,22 @@ if (Get-Command choco -ErrorAction SilentlyContinue) {
 Write-Host "[*] Creating user.js configuration for malware analysis..."
 
 # Locate Firefox Profile Path
+$ffExe = "$env:ProgramFiles\Mozilla Firefox\firefox.exe"
 $ffPath = "$env:APPDATA\Mozilla\Firefox\Profiles"
 # Firefox must run once to create the profile folder.
 if (-not (Test-Path $ffPath)) {
-    Write-Host "[!] Firefox needs to run once. Starting and killing it..."
-    Start-Process "firefox.exe"
-    Start-Sleep -Seconds 5
-    Stop-Process -Name "firefox" -Force -ErrorAction SilentlyContinue
+    if (Test-Path $ffExe) {
+        Write-Host "[!] Firefox needs to run once. Starting and killing it..."
+        Start-Process -FilePath $ffExe
+        Start-Sleep -Seconds 15
+        Stop-Process -Name "firefox" -Force -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "[!] Firefox executable not found at $ffExe. Install first, then rerun." -ForegroundColor Red
+    }
 }
 
-# Find the profile folder (*.default-release)
-$profileDir = Get-ChildItem -Path $ffPath | Where-Object { $_.Name -like "*.default-release" } | Select-Object -First 1
+# Find the profile folder (*.default-release, or legacy *.default)
+$profileDir = Get-ChildItem -Path $ffPath -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -like ".*default*" } | Select-Object -First 1
 
 if ($profileDir) {
     $userJsPath = Join-Path $profileDir.FullName "user.js"
