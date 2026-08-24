@@ -94,8 +94,13 @@ if errorlevel 1 (
 :: Disable Windows Hello protection
 echo [5/6] Disabling Windows Hello Protection...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\WindowsHello" /v Enabled /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\VBSToggle" /v WindowsHello /t REG_DWORD /d 1 /f >nul 2>&1
-echo       Done.
+if errorlevel 1 (
+    echo       Failed!
+    reg delete "HKLM\SOFTWARE\VBSToggle" /v WindowsHello /f >nul 2>&1
+) else (
+    reg add "HKLM\SOFTWARE\VBSToggle" /v WindowsHello /t REG_DWORD /d 1 /f >nul 2>&1
+    echo       Done.
+)
 
 :: Disable Hypervisor via BCD
 echo [6/6] Disabling Windows Hypervisor...
