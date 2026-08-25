@@ -20,6 +20,9 @@ Start-Sleep -Seconds 3
 #    Deleting the files without unregistering corrupts WSL state.
 Write-Host "[2/4] Resetting Docker WSL distros..."
 wsl --shutdown
+# ponytail: wsl.exe emits UTF-16LE; without this PS 5.1 captures NUL-mangled
+# names and the -like match below silently finds nothing.
+[Console]::OutputEncoding = [Text.Encoding]::Unicode
 foreach ($distro in (wsl --list --quiet | ForEach-Object { $_.Trim() } | Where-Object { $_ -like "docker-desktop*" })) {
     Write-Host "      Unregistering $distro..."
     wsl --unregister $distro
