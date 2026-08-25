@@ -124,7 +124,6 @@ if defined _force goto :do_cg
 reg query "HKLM\SOFTWARE\VBSToggle" /v CredentialGuard >nul 2>&1
 if errorlevel 1 goto :skip_cg
 :do_cg
-echo [4/6] Enabling Credential Guard...
 :: Restore the ORIGINAL LsaCfgFlags value recorded by disable-vbs.bat (default 1)
 echo [4/6] Enabling Credential Guard...
 set "_cgval=1"
