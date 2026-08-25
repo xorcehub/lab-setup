@@ -78,11 +78,11 @@ if errorlevel 1 (
 )
 
 :: Disable Credential Guard
-:: Record the ORIGINAL LsaCfgFlags value so enable-vbs.bat can restore it exactly
+:: Record the ORIGINAL LsaCfgFlags value so enable-vbs.bat can restore it exactly.
+:: If the value doesn't exist yet, record nothing so enable-vbs.bat uses its
+:: default (1) instead of restoring 0 (which would never re-enable CG).
 echo [4/6] Disabling Credential Guard...
-set "cgOrig=0"
-for /f "tokens=3" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LsaCfgFlags 2^>nul ^| find "LsaCfgFlags"') do set "cgOrig=%%a"
-reg add "HKLM\SOFTWARE\VBSToggle" /v CredentialGuard /t REG_DWORD /d !cgOrig! /f >nul 2>&1
+for /f "tokens=3" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LsaCfgFlags 2^>nul ^| find "LsaCfgFlags"') do reg add "HKLM\SOFTWARE\VBSToggle" /v CredentialGuard /t REG_DWORD /d %%a /f >nul 2>&1
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v LsaCfgFlags /t REG_DWORD /d 0 /f >nul 2>&1
 if errorlevel 1 (
     echo       Failed!
